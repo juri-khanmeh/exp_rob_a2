@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: erl2
+    relative_path: urdf/robot6.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/m2wr.srdf
+  CONFIG:
+    author_name: Juri Khanmeh
+    author_email: s5035823@unige.studenti.it
+    generated_timestamp: 1663835230
