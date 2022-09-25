@@ -20,7 +20,7 @@ namespace KCL_rosplan {
 	
 	bool MyActionInterface::concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 		// here the implementation of the action
-		std::cout << "Moving arm from Up to Down" << std::endl;
+		std::cout << "Moving arm from Down to Up" << std::endl;
 		
 		//sleep(5);
 		//actionlib::SimpleActionClient<motion_plan::PlanningAction> ac("reaching_goal", true);
@@ -48,7 +48,7 @@ namespace KCL_rosplan {
   		pose1.orientation.z = -1.57;
   		pose1.position.x =  0.50;
   		pose1.position.y =  0.00;
-  		pose1.position.z =  0.75;
+  		pose1.position.z =  1.25;
   
   
   		// Inverse Kinematics
@@ -92,22 +92,14 @@ namespace KCL_rosplan {
   
   		std::cout << "Position 1 -> IK + setJointValue" << std::endl;
   		sleep(2.0);
-		//float pos=2.6;
-		//if(msg->parameters[2].value == "wp1"){
-		//	goal.target_pose.pose.position.x = -pos;
-		//	goal.target_pose.pose.position.y = 0.0;
-		//	goal.target_pose.pose.orientation.w = 0.0;
-		//}
-
-		//ac.sendGoal(goal);
-		//ac.waitForResult();
+		
 		ROS_INFO("Action (%s) performed: completed!", msg->name.c_str());
 		return true;
 	}
 }
 
 int main(int argc, char **argv) {
-	ros::init(argc, argv, "lower_ee_action", ros::init_options::AnonymousName);
+	ros::init(argc, argv, "raise_ee_action", ros::init_options::AnonymousName);
 	ros::NodeHandle nh("~");
 	KCL_rosplan::MyActionInterface my_aci(nh);
 	my_aci.runActionInterface();

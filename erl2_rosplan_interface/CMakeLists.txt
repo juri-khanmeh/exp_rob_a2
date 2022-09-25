@@ -138,6 +138,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
  add_executable(goToWayPoint src/go_to_waypoint.cpp)
  add_executable(ArmDown src/lower_ee.cpp)
+ add_executable(ArmUp src/raise_ee.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -155,6 +156,9 @@ include_directories(
    ${catkin_LIBRARIES}
  )
  target_link_libraries(ArmDown
+   ${catkin_LIBRARIES}
+ )
+ target_link_libraries(ArmUp
    ${catkin_LIBRARIES}
  )
 #############
