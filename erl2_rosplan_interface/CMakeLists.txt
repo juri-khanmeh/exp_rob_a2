@@ -139,6 +139,8 @@ include_directories(
  add_executable(goToWayPoint src/go_to_waypoint.cpp)
  add_executable(ArmDown src/lower_ee.cpp)
  add_executable(ArmUp src/raise_ee.cpp)
+ add_executable(UpdateOntology src/ontology.cpp)
+ add_executable(CheckHypo src/oracle.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -149,7 +151,8 @@ include_directories(
 ## Add cmake target dependencies of the executable
 ## same as for the library above
  add_dependencies(goToWayPoint ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-## add_dependencies(ArmDown ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(UpdateOntology ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(CheckHypo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(goToWayPoint
@@ -159,6 +162,12 @@ include_directories(
    ${catkin_LIBRARIES}
  )
  target_link_libraries(ArmUp
+   ${catkin_LIBRARIES}
+ )
+ target_link_libraries(UpdateOntology
+   ${catkin_LIBRARIES}
+ )
+ target_link_libraries(CheckHypo
    ${catkin_LIBRARIES}
  )
 #############
