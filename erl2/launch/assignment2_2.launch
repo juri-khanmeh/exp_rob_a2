@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<launch>
+
+<!-- By default, we do not start a database (it can be large) -->
+  <arg name="db" default="false" />
+  <!-- Allow user to specify database location -->
+  <arg name="db_path" default="$(find erl2_moveit)/default_warehouse_mongo_db" />
+
+  <!-- By default, we are not in debug mode -->
+  <!-- <arg name="debug" default="false" /> -->
+
+  <!-- By default, we won't load or override the robot_description -->
+  <arg name="load_robot_description" default="false"/>
+  	
+	
+  <arg name="use_gui" default="false" />
+  <arg name="gazebo_gui" default="true"/>
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="extra_gazebo_args" default=""/>
+  <arg name="gui" default="true"/>
+  <arg name="recording" default="false"/>
+  <arg name="world" default="my_world" />
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="physics" default="ode"/>
+  <arg name="verbose" default="false"/>
+  <arg name="world_name" value="$(find erl2)/world/$(arg world).world"/>
+  <arg name="respawn_gazebo" default="false"/>
+  <arg name="use_clock_frequency" default="false"/>
+  <arg name="pub_clock_frequency" default="100"/>
+
+  <!-- set use_sim_time flag -->
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+
+  <!-- set command arguments -->
+  <arg unless="$(arg paused)" name="command_arg1" value=""/>
+  <arg     if="$(arg paused)" name="command_arg1" value="-u"/>
+  <arg unless="$(arg recording)" name="command_arg2" value=""/>
+  <arg     if="$(arg recording)" name="command_arg2" value="-r"/>
+  <arg unless="$(arg verbose)" name="command_arg3" value=""/>
+  <arg     if="$(arg verbose)" name="command_arg3" value="--verbose"/>
+  <arg unless="$(arg debug)" name="script_type" value="gzserver"/>
+  <arg     if="$(arg debug)" name="script_type" value="debug"/>
+
+  <!-- start gazebo server-->
+  <group if="$(arg use_clock_frequency)">
+    <param name="gazebo/pub_clock_frequency" value="$(arg pub_clock_frequency)" />
+  </group>
+  <node name="gazebo" pkg="gazebo_ros" type="$(arg script_type)" respawn="$(arg respawn_gazebo)" output="screen"
+	args="$(arg command_arg1) $(arg command_arg2) $(arg command_arg3) -e $(arg physics) $(arg extra_gazebo_args) $(arg world_name)" />
+	
+  <!-- start gazebo client -->
+  <group if="$(arg gui)">
+    <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" output="screen"/>
+  </group>
+
+  <node name="simulation" pkg ="erl2" type="simulation" output="screen" /> 
+	
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find erl2)/config/sim.rviz" />  -->
+  
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <param name="robot_description" textfile="$(find erl2)/urdf/robot.urdf" />
+	 
+  <!-- Start Rviz -->  
+  <param name="use_gui" value="False"/>
+   <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node> -->  
+   
+   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" unless="$(arg use_gui)">
+    <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
+    <rosparam param="source_list">[/joint_states]</rosparam>
+  </node>
+  <node name="joint_state_publisher" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" if="$(arg use_gui)">
+    <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
+    <rosparam param="source_list">[/joint_states]</rosparam>
+  </node>
+  
+  <!-- Given the published joint states, publish tf for the robot links -->
+   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" /> 
+  <!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+	<remap from="joint_states" to="m2wr/joint_states"/>
+   </node> -->
+   
+  <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default) -->
+  <include file="$(find erl2_moveit)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="fake_execution" value="false"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="load_robot_description" value="$(arg load_robot_description)"/>
+  </include>
+  <!-- If database loading was enabled, start mongodb as well -->
+  <include file="$(find erl2_moveit)/launch/default_warehouse_db.launch" if="$(arg db)">
+    <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
+  </include>
+  
+   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find erl2)/config/sim.rviz" />
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+	args="-urdf -model robot1 -param robot_description -x 0.0 -y 0.0 -z 0.05"/> 
+	
+   <include file="$(find erl2_moveit)/launch/ros_controllers.launch"/>
+   
+	
+
+</launch>
